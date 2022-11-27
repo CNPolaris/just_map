@@ -1,7 +1,9 @@
+import os
 from django.shortcuts import render
 from django.core.cache import cache
 import geopandas as gp
 
+from utils.config import BASE_DIR
 from utils.resp import result
 from utils.logger import logger
 from lib import area_to_grid, gen_grids_array
@@ -9,6 +11,8 @@ from redis_key import *
 from utils.resp import OK, format_request
 
 MAP_TYPE = 'baidu'
+LAKE_PATH = BASE_DIR + '{0}static{1}shape{2}baidu_lake.shp'.format(os.sep, os.sep, os.sep)
+ISLAND_PATH = BASE_DIR + '{0}static{1}shape{2}baidu_island.shp'.format(os.sep, os.sep, os.sep)
 
 # Create your views here.
 def baidu_gen_array(request):
@@ -31,9 +35,9 @@ def baidu_gen_array(request):
                 'index': i + 1
             }
             gird_list.append(temp)
-        lake_path = '/home/polaris/projects/just_map/static/shape/baidu_lake.shp'
-        island_path = '/home/polaris/projects/just_map/static/shape/baidu_island.shp'
-        grid_array = gen_grids_array(grid, params=params, lake_path=lake_path, island_path=island_path)
+        # lake_path = '/home/polaris/projects/just_map/static/shape/baidu_lake.shp'
+        # island_path = '/home/polaris/projects/just_map/static/shape/baidu_island.shp'
+        grid_array = gen_grids_array(grid, params=params, lake_path=LAKE_PATH, island_path=ISLAND_PATH)
         # 设置缓存
         cache.set(BAIDU_GRID_SHAPE, grid, GRID_EXPIRED)
         cache.set(BAIDU_GRID_PARAMS, params, GRID_EXPIRED)
@@ -67,9 +71,9 @@ def baidu_gen_array_v2(request):
                 {'lng':lng1 , 'lat':lat2 }
             ]
             grid_list.append(temp)
-        lake_path = '/home/polaris/projects/just_map/static/shape/baidu_lake.shp'
-        island_path = '/home/polaris/projects/just_map/static/shape/baidu_island.shp'
-        grid_array = gen_grids_array(grid, params=params, lake_path=lake_path, island_path=island_path)
+        # lake_path = '/home/polaris/projects/just_map/static/shape/baidu_lake.shp'
+        # island_path = '/home/polaris/projects/just_map/static/shape/baidu_island.shp'
+        grid_array = gen_grids_array(grid, params=params, lake_path=LAKE_PATH, island_path=ISLAND_PATH)
 
         cache.set(BAIDU_GRID_SHAPE2, grid, GRID_EXPIRED)
         cache.set(BAIDU_GRID_PARAMS2, params, GRID_EXPIRED)
@@ -109,9 +113,9 @@ def gen_baidu_grid_v3(request):
                     ]
                 }
             })
-        lake_path = '/home/polaris/projects/just_map/static/shape/baidu_lake.shp'
-        island_path = '/home/polaris/projects/just_map/static/shape/baidu_island.shp'
-        grid_array = gen_grids_array(grid, params=params, lake_path=lake_path, island_path=island_path)
+        # lake_path = '/home/polaris/projects/just_map/static/shape/baidu_lake.shp'
+        # island_path = '/home/polaris/projects/just_map/static/shape/baidu_island.shp'
+        grid_array = gen_grids_array(grid, params=params, lake_path=LAKE_PATH, island_path=ISLAND_PATH)
 
         cache.set(BAIDU_GRID_SHAPE3, grid, GRID_EXPIRED)
         cache.set(BAIDU_GRID_PARAMS3, params, GRID_EXPIRED)
@@ -152,6 +156,7 @@ def gen_baidu_grid_v4(request):
                     ]
                 }
             })
+        # TODO: 精度太小时计算时间开销有点大
         # lake_path = '/home/polaris/projects/just_map/static/shape/baidu_lake.shp'
         # island_path = '/home/polaris/projects/just_map/static/shape/baidu_island.shp'
         # grid_array = gen_grids_array(grid_shape, params=grid_params, lake_path=lake_path, island_path=island_path)
@@ -172,3 +177,9 @@ def get_path(request):
         y = float(y.strip())
         lake.append({'lng':x, 'lat':y})
     return result(OK, '', lake)
+
+def upload_points(request):
+    request = format_request(request)
+    points = request.params.get('points')
+    points = [{'lng':float(point['lng']),'lat':float(point['lat'])}for point in points]
+    return result(OK, '', points)

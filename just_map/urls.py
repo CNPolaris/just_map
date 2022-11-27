@@ -28,5 +28,6 @@ urlpatterns = [
     path(api.BAIDU_GRID_GEN_2, baidu.baidu_gen_array_v2),
     path(api.BAIDU_GRID_GEN_3, baidu.gen_baidu_grid_v3),
     path('api/baidu/v4/grid', baidu.gen_baidu_grid_v4),
+    path('api/baidu/upload/points', baidu.upload_points),
     path('api/route', baidu.get_path)    
 ]
