@@ -1,9 +1,9 @@
-from channels.generic.websocket import AsyncWebsocketConsumer, WebsocketConsumer
+from channels.generic.websocket import AsyncWebsocketConsumer, WebsocketConsumer, AsyncJsonWebsocketConsumer
 from channels.exceptions import StopConsumer
 import ast
 
 
-class DataConsumer(AsyncWebsocketConsumer):
+class DataConsumer(AsyncJsonWebsocketConsumer):
 
     async def websocket_connect(self, message):
         # 接收连接
@@ -16,10 +16,10 @@ class DataConsumer(AsyncWebsocketConsumer):
 
     async def websocket_receive(self, message):
         group = self.scope['url_route']['kwargs'].get('group')
-        await self.channel_layer.group_send(group, {'type': 'to_web', 'message': message})
+        await self.channel_layer.group_send(group, {'type': 'to_data_web', 'message': message})
 
-    async def to_web(self, event):
-        await self.send(event["message"]["text"])
+    async def to_data_web(self, event):
+        await self.send_json(ast.literal_eval(event["message"]["text"]))
 
     async def websocket_disconnect(self, message):
         group = self.scope['url_route']['kwargs'].get('group')
@@ -42,7 +42,7 @@ class VideoDataConsumer(AsyncWebsocketConsumer):
     async def to_web(self, event):
         # print(event['message']['text'])
         # print(event)
-        print("send img")
+        # print("send img")
         await self.send(bytes_data=event['message']['bytes'])
 
     async def websocket_disconnect(self, message):
